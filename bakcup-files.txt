@@ -1,0 +1,134 @@
+================backup of imp files============================================
+
+
+===================> server.js
+
+
+const express = require('express');
+const mysql = require('mysql2');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const bcrypt = require('bcrypt'); // Add bcrypt
+const jwt = require('jsonwebtoken'); // Add JWT
+
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
+
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'root',
+  database: 'bridgeme'
+});
+
+db.connect((err) => {
+  if (err) throw err;
+  console.log('Connected to MySQL Database');
+});
+
+//Login Route
+app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
+    const sql = 'SELECT * FROM users WHERE email = ? AND password = ?';
+  
+    db.query(sql, [username, password], (err, results) => {
+      if (err) {
+        console.error('Error querying database:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+        return;
+      }
+      if (results.length > 0) {
+        res.json({ success: true });
+      } else {
+        res.json({ success: false, message: 'Invalid credentials' });
+      }
+    });
+  });
+  
+
+
+
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port: http://localhost:${PORT}`);
+});
+
+
+=======================> login.jsx
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import '../CSS/login.css'
+
+const Login = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      // Replace with your backend login endpoint
+      const response = await axios.post('http://localhost:5000/api/login', { username, password });
+      if (response.data.success) {
+        navigate('/adminportal');
+      } else {
+        alert('Invalid credentials');
+      }
+    } catch (error) {
+      console.error('Error during login', error);
+    }
+  };
+
+  return (
+
+
+
+    <>
+        <div className="login">
+
+
+        <form onSubmit={handleLogin}>
+
+        <div className="login-con">
+        
+
+        
+        <div className="logo">
+                    <h1 className="text-center font-sans text-purple-600 text-4xl pb-4">BRIDGEME</h1>
+                    <p className="text-center text-purple-600">Welcome to BridgeMe</p>
+                </div>
+
+          
+            <label>Username</label>
+            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
+          
+
+       
+          <label>Password</label>
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        
+          <a href="">forgot password ?</a>
+
+
+          <button className='main-btn' type='submit' > Log In</button>
+
+
+        </div>
+      </form>
+
+
+
+
+
+
+        </div>
+    
+    </>
+    
+  );
+};
+
+export default Login;
